@@ -1,7 +1,12 @@
 package course.concurrency.m2_async.cf.min_price;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class PriceAggregator {
