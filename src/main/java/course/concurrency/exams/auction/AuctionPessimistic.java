@@ -12,7 +12,7 @@ public class AuctionPessimistic implements Auction {
         this.notifier = notifier;
     }
 
-    private volatile Bid latestBid;
+    private Bid latestBid;
 
     public boolean propose(Bid bid) {
         boolean updated = false;
