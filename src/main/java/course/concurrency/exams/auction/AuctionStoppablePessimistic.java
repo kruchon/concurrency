@@ -1,8 +1,13 @@
 package course.concurrency.exams.auction;
 
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 public class AuctionStoppablePessimistic implements AuctionStoppable {
 
+    private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+
     private Notifier notifier;
+    private volatile boolean isAuctionFinished = false;
 
     public AuctionStoppablePessimistic(Notifier notifier) {
         this.notifier = notifier;
@@ -11,19 +16,44 @@ public class AuctionStoppablePessimistic implements AuctionStoppable {
     private Bid latestBid;
 
     public boolean propose(Bid bid) {
-        if (bid.getPrice() > latestBid.getPrice()) {
-            notifier.sendOutdatedMessage(latestBid);
-            latestBid = bid;
-            return true;
+        boolean updated = false;
+        if (!isAuctionFinished && (latestBid == null || bid.getPrice() > latestBid.getPrice())) {
+            var writeLock = lock.writeLock();
+            writeLock.lock();
+            try {
+                if (!isAuctionFinished && (latestBid == null || bid.getPrice() > latestBid.getPrice())) {
+                    latestBid = bid;
+                    updated = true;
+                }
+            } finally {
+                writeLock.unlock();
+            }
         }
-        return false;
+        if (updated) {
+            notifier.sendOutdatedMessage(bid);
+        }
+        return updated;
     }
 
     public Bid getLatestBid() {
-        return latestBid;
+        var readLock = lock.readLock();
+        readLock.lock();
+        try {
+            return latestBid;
+        } finally {
+            readLock.unlock();
+        }
     }
 
+    @Override
     public Bid stopAuction() {
-        return latestBid;
+        isAuctionFinished = true;
+        var readLock = lock.readLock();
+        readLock.lock();
+        try {
+           return latestBid;
+        } finally {
+            readLock.unlock();
+        }
     }
 }

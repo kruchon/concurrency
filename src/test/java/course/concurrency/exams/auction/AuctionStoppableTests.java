@@ -27,7 +27,7 @@ public class AuctionStoppableTests {
 
     @BeforeEach
     public void setup() {
-        notifier = new Notifier();
+        notifier = new NotifierUpdated();
 
         pessimisticSupplier = () -> new AuctionStoppablePessimistic(notifier);
         pessimistic = pessimisticSupplier.get();
